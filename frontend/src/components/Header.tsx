@@ -6,6 +6,7 @@ import { useUser } from '../context/UserContext'
 
 const NAV = [
   { to: '/quests', label: 'Квесты' },
+  { to: '/teams', label: 'Команды' },
   { to: '/leaderboard', label: 'Рейтинг' },
   { to: '/about', label: 'О нас' },
 ]

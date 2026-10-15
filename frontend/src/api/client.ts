@@ -1,6 +1,6 @@
-import type { Complaint, Profile, Quest, QuestStatus, Stats, User } from '../types'
+import type { Complaint, JoinRequest, Profile, Quest, QuestStatus, Stats, Team, User } from '../types'
 import { mockComplaints, mockProfile, mockQuests, mockStats, mockUser } from './mock'
-import { createTeam, joinByCode, joinTeam, listTeams } from './teams'
+import { acceptRequest, cancelRequest, createTeam, joinByCode, joinTeam, leaveTeam, listTeams, rejectRequest, removeMember, requestToJoin, updateTeam } from './teams'
 
 /**
  * MORIZO — frontend-only: все данные берутся из локальных mock-данных.
@@ -48,11 +48,25 @@ export const api = {
 
   getTeams: () => delay(listTeams()),
 
-  joinTeam: (id: number) => delay(joinTeam(id)),
+  joinTeam: (id: number, user: User) => delay(joinTeam(id, user)),
 
-  joinTeamByCode: (code: string) => delay(joinByCode(code)),
+  requestToJoin: (id: number) => delay(requestToJoin(id)),
 
-  createTeam: (name: string, description = '') => delay(createTeam(name, description)),
+  cancelJoinRequest: (id: number) => delay(cancelRequest(id)),
+
+  leaveTeam: (id: number) => delay(leaveTeam(id)),
+
+  acceptTeamRequest: (teamId: number, user: JoinRequest) => delay(acceptRequest(teamId, user)),
+
+  rejectTeamRequest: (teamId: number, userId: number) => delay(rejectRequest(teamId, userId)),
+
+  joinTeamByCode: (code: string, user: User) => delay(joinByCode(code, user)),
+
+  createTeam: (name: string, description = '', user?: User, avatar?: string) => delay(createTeam(name, description, user, avatar)),
+
+  updateTeam: (id: number, data: Partial<Team>) => delay(updateTeam(id, data)),
+
+  removeTeamMember: (teamId: number, userId: number) => delay(removeMember(teamId, userId)),
 
   getProfile: () => delay(mockProfile),
 

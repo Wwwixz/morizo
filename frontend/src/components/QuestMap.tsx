@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { ChevronDown, ChevronUp, Crosshair, Eye, EyeOff, Search } from 'lucide-react'
@@ -40,13 +40,19 @@ function pinIcon(variant: 'yellow' | 'black' | 'pulse', size = 34) {
 
 function FitBounds({ points }: { points: MapPoint[] }) {
   const map = useMap()
+  // Подгоняем вид только при первом показе; иначе при смене фильтра
+  // карта каждый раз меняла бы масштаб («размер»)
+  const fitted = useRef(false)
   useEffect(() => {
     if (points.length === 0) return
+    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]))
+    // после первого раза двигаем карту только если точки не помещаются в текущий вид
+    if (fitted.current && map.getBounds().contains(bounds)) return
+    fitted.current = true
     if (points.length === 1) {
       map.setView([points[0].lat, points[0].lng], 15)
       return
     }
-    const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]))
     map.fitBounds(bounds, { padding: [48, 48] })
   }, [points, map])
   return null

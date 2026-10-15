@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Clock, MapPin, Route, Star } from 'lucide-react'
+import { Bookmark, Clock, MapPin, Route, Star } from 'lucide-react'
 import type { Quest } from '../types'
+import { isFavorite, toggleFavorite } from '../api/favorites'
 import { Badge } from './Badge'
 
 export function tagVariant(tag: string): 'yellow' | 'blue' | 'red' | 'green' {
@@ -18,6 +20,14 @@ function fmtRange(durationMin: number): string {
 }
 
 export function QuestCard({ quest }: { quest: Quest }) {
+  const [fav, setFav] = useState(() => isFavorite(quest.id))
+
+  const onFav = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setFav(toggleFavorite(quest.id))
+  }
+
   return (
     <article className="quest-card">
       <div className="quest-card-img" style={{ backgroundImage: `url(${quest.image})` }}>
@@ -28,6 +38,15 @@ export function QuestCard({ quest }: { quest: Quest }) {
           <Star size={14} fill="#FFC107" color="#FFC107" />
           {quest.rating.toFixed(1)}
         </span>
+        <button
+          className={`qcard-fav ${fav ? 'active' : ''}`}
+          onClick={onFav}
+          title={fav ? 'Убрать из избранного' : 'В избранное'}
+          aria-label={fav ? 'Убрать из избранного' : 'В избранное'}
+          aria-pressed={fav}
+        >
+          <Bookmark size={16} fill={fav ? 'currentColor' : 'none'} />
+        </button>
       </div>
       <div className="quest-card-body">
         <div className="quest-card-title">{quest.title}</div>

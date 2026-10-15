@@ -42,6 +42,12 @@ export interface Quest {
   points: QuestPoint[]
 }
 
+export type TeamRole = 'president' | 'vice' | 'member'
+
+export interface TeamMember extends User {
+  role: TeamRole
+}
+
 export interface Team {
   id: number
   name: string
@@ -53,6 +59,16 @@ export interface Team {
   quests: number
   points: number
   is_mine: boolean
+  is_pending?: boolean
+  requests?: JoinRequest[]
+  membersList?: TeamMember[]
+  achievements?: Achievement[]
+}
+
+export interface JoinRequest {
+  userId: number
+  userName: string
+  userAvatar: string
 }
 
 export interface Achievement {

@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Clock, MapPin, Route, Search, Star, X } from 'lucide-react'
 import { api } from '../api/client'
+import { listFavorites, FAVORITES_EVENT } from '../api/favorites'
 import type { Quest } from '../types'
 import { QuestCard } from '../components/QuestCard'
 import { QuestMap } from '../components/QuestMap'
 
-type Filter = 'all' | 'near' | 'popular' | 'new' | 'historical'
+type Filter = 'all' | 'near' | 'popular' | 'new' | 'historical' | 'fav'
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'Все' },
@@ -14,6 +15,7 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: 'popular', label: 'Популярные' },
   { id: 'new', label: 'Новинки' },
   { id: 'historical', label: 'Исторические' },
+  { id: 'fav', label: 'Избранное' },
 ]
 
 export function Catalog({ onlyMap = false }: { onlyMap?: boolean }) {
@@ -22,9 +24,14 @@ export function Catalog({ onlyMap = false }: { onlyMap?: boolean }) {
   const [params] = useSearchParams()
   const [query, setQuery] = useState(params.get('q') ?? '')
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
+  const [favIds, setFavIds] = useState<number[]>(() => listFavorites())
 
   useEffect(() => {
     api.getQuests('published').then((qs) => setQuests((qs as Quest[]).filter((q) => q.points.length > 0)))
+    setFavIds(listFavorites())
+    const sync = () => setFavIds(listFavorites())
+    window.addEventListener(FAVORITES_EVENT, sync)
+    return () => window.removeEventListener(FAVORITES_EVENT, sync)
   }, [])
 
   const list = useMemo(() => {
@@ -32,10 +39,11 @@ export function Catalog({ onlyMap = false }: { onlyMap?: boolean }) {
     if (filter === 'popular') res = res.filter((q) => q.popular || q.tag === 'Популярное')
     if (filter === 'new') res = res.filter((q) => q.is_new)
     if (filter === 'historical') res = res.filter((q) => q.tag === 'История города')
+    if (filter === 'fav') res = res.filter((q) => favIds.includes(q.id))
     if (filter === 'near') res = [...res].sort((a, b) => a.distance_km - b.distance_km)
     if (query.trim()) res = res.filter((q) => q.title.toLowerCase().includes(query.trim().toLowerCase()))
     return res
-  }, [quests, filter, query])
+  }, [quests, filter, query, favIds])
 
   const mapPoints = useMemo(() => list.flatMap((q) => q.points.map((p) => p)), [list])
   const pointQuestIds = useMemo(() => list.flatMap((q) => q.points.map(() => q.id)), [list])
@@ -142,7 +150,13 @@ export function Catalog({ onlyMap = false }: { onlyMap?: boolean }) {
               </div>
             ))}
           </div>
-          {list.length === 0 && <p className="muted">Ничего не найдено — попробуйте другой фильтр.</p>}
+          {list.length === 0 && (
+            <p className="muted">
+              {filter === 'fav'
+                ? 'В избранном пока пусто — откройте квест и нажмите «В избранное».'
+                : 'Ничего не найдено — попробуйте другой фильтр.'}
+            </p>
+          )}
         </div>
       </div>
     </div>

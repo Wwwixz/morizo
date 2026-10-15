@@ -405,6 +405,17 @@ export const mockTeams: Team[] = [
     quests: 12,
     points: 12460,
     is_mine: true,
+    membersList: [
+      { id: 1, email: 'artem@morizo.ru', name: 'Артём К.', avatar: IMG('avatars/u1.jpg'), role: 'president' },
+      { id: 2, email: 'ivan@morizo.ru', name: 'Иван И.', avatar: IMG('avatars/u2.jpg'), role: 'vice' },
+      { id: 3, email: 'olga@morizo.ru', name: 'Ольга П.', avatar: IMG('avatars/u3.jpg'), role: 'member' },
+      { id: 4, email: 'dima@morizo.ru', name: 'Дмитрий С.', avatar: IMG('avatars/u4.jpg'), role: 'member' },
+      { id: 5, email: 'anna@morizo.ru', name: 'Анна М.', avatar: IMG('avatars/u5.jpg'), role: 'member' },
+    ],
+    achievements: [
+      { id: 1, title: 'Первооткрыватели', description: 'Первая команда в системе', color: '#FFC107' },
+      { id: 2, title: 'Марафонцы', description: 'Пройдено 10 квестов подряд', color: '#3B82F6' },
+    ],
   },
   {
     id: 2,
@@ -416,6 +427,15 @@ export const mockTeams: Team[] = [
     quests: 8,
     points: 10320,
     is_mine: false,
+    membersList: [
+      { id: 2, email: 'ivan@morizo.ru', name: 'Иван И.', avatar: IMG('avatars/u2.jpg'), role: 'president' },
+      { id: 6, email: 'serg@morizo.ru', name: 'Сергей В.', avatar: IMG('avatars/u1.jpg'), role: 'vice' },
+      { id: 7, email: 'elena@morizo.ru', name: 'Елена К.', avatar: IMG('avatars/u3.jpg'), role: 'member' },
+      { id: 8, email: 'max@morizo.ru', name: 'Максим Р.', avatar: IMG('avatars/u4.jpg'), role: 'member' },
+    ],
+    achievements: [
+      { id: 3, title: 'Алгоритмисты', description: 'Лучшее время в 3 квестах', color: '#10B981' },
+    ],
   },
   {
     id: 3,
@@ -427,6 +447,14 @@ export const mockTeams: Team[] = [
     quests: 6,
     points: 8750,
     is_mine: true,
+    membersList: [
+      { id: 3, email: 'olga@morizo.ru', name: 'Ольга П.', avatar: IMG('avatars/u3.jpg'), role: 'president' },
+      { id: 9, email: 'victor@morizo.ru', name: 'Виктор Т.', avatar: IMG('avatars/u2.jpg'), role: 'vice' },
+      { id: 10, email: 'maria@morizo.ru', name: 'Мария Л.', avatar: IMG('avatars/u5.jpg'), role: 'member' },
+    ],
+    achievements: [
+      { id: 4, title: 'Историки', description: 'Знатоки всех башен Кремля', color: '#8B5CF6' },
+    ],
   },
   {
     id: 4,
@@ -438,6 +466,14 @@ export const mockTeams: Team[] = [
     quests: 15,
     points: 7230,
     is_mine: false,
+    membersList: [
+      { id: 4, email: 'dima@morizo.ru', name: 'Дмитрий С.', avatar: IMG('avatars/u4.jpg'), role: 'president' },
+      { id: 11, email: 'katya@morizo.ru', name: 'Екатерина Б.', avatar: IMG('avatars/u1.jpg'), role: 'vice' },
+      { id: 12, email: 'oleg@morizo.ru', name: 'Олег Н.', avatar: IMG('avatars/u2.jpg'), role: 'member' },
+      { id: 13, email: 'sveta@morizo.ru', name: 'Светлана В.', avatar: IMG('avatars/u3.jpg'), role: 'member' },
+      { id: 14, email: 'igor@morizo.ru', name: 'Игорь К.', avatar: IMG('avatars/u5.jpg'), role: 'member' },
+      { id: 15, email: 'nastya@morizo.ru', name: 'Анастасия С.', avatar: IMG('avatars/u4.jpg'), role: 'member' },
+    ],
   },
   {
     id: 5,
@@ -449,6 +485,12 @@ export const mockTeams: Team[] = [
     quests: 9,
     points: 6980,
     is_mine: false,
+    membersList: [
+      { id: 5, email: 'anna@morizo.ru', name: 'Анна М.', avatar: IMG('avatars/u5.jpg'), role: 'president' },
+      { id: 16, email: 'pavel@morizo.ru', name: 'Павел Ж.', avatar: IMG('avatars/u1.jpg'), role: 'vice' },
+      { id: 17, email: 'lisa@morizo.ru', name: 'Елизавета Д.', avatar: IMG('avatars/u3.jpg'), role: 'member' },
+      { id: 18, email: 'kirill@morizo.ru', name: 'Кирилл Ф.', avatar: IMG('avatars/u2.jpg'), role: 'member' },
+    ],
   },
 ]
 

@@ -11,6 +11,7 @@ import {
   type QuestRun,
   type RunTeam,
 } from '../api/runs'
+import { isFavorite, toggleFavorite } from '../api/favorites'
 import { TEAM_MAX, TEAM_MIN, canTeamPlay } from '../api/teams'
 import type { Quest, Team } from '../types'
 import { Modal } from '../components/Modal'
@@ -34,6 +35,7 @@ export function QuestDetails() {
     const questId = Number(id)
     api.getQuest(questId).then((q) => setQuest(q ?? null))
     setRun(getRun(questId))
+    setFav(isFavorite(questId))
     api.getTeams().then((ts) => setMyTeams(ts.filter((t) => t.is_mine)))
   }, [id])
 
@@ -129,8 +131,9 @@ export function QuestDetails() {
           <button
             className={`btn ${fav ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => {
-              setFav((v) => !v)
-              toast(fav ? 'Удалено из избранного' : 'Добавлено в избранное')
+              const next = toggleFavorite(quest.id)
+              setFav(next)
+              toast(next ? 'Добавлено в избранное' : 'Удалено из избранного')
             }}
           >
             <Bookmark size={16} fill={fav ? 'currentColor' : 'none'} />
