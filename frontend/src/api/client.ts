@@ -1,5 +1,6 @@
-import type { Complaint, Profile, Quest, QuestStatus, Stats, Team, User } from '../types'
-import { mockComplaints, mockProfile, mockQuests, mockStats, mockTeams, mockUser } from './mock'
+import type { Complaint, Profile, Quest, QuestStatus, Stats, User } from '../types'
+import { mockComplaints, mockProfile, mockQuests, mockStats, mockUser } from './mock'
+import { createTeam, joinByCode, joinTeam, listTeams } from './teams'
 
 /**
  * MORIZO — frontend-only: все данные берутся из локальных mock-данных.
@@ -45,29 +46,13 @@ export const api = {
     return delay(q)
   },
 
-  getTeams: () => delay(mockTeams),
+  getTeams: () => delay(listTeams()),
 
-  joinTeam: (id: number) => {
-    const t = mockTeams.find((x) => x.id === id)
-    if (t && !t.is_mine) {
-      t.is_mine = true
-      t.members += 1
-    }
-    return delay(mockTeams)
-  },
+  joinTeam: (id: number) => delay(joinTeam(id)),
 
-  createTeam: (name: string) => {
-    mockTeams.unshift({
-      id: Date.now(),
-      name,
-      avatar: '/img/avatars/u1.jpg',
-      members: 1,
-      quests: 0,
-      points: 0,
-      is_mine: true,
-    })
-    return delay(mockTeams)
-  },
+  joinTeamByCode: (code: string) => delay(joinByCode(code)),
+
+  createTeam: (name: string, description = '') => delay(createTeam(name, description)),
 
   getProfile: () => delay(mockProfile),
 

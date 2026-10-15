@@ -22,6 +22,7 @@ export const mockQuests: Quest[] = [
     is_new: false,
     rating: 4.9,
     tag: 'Популярное',
+    start: { lat: 56.3303, lng: 44.0058 },
     points: [
       {
         lat: 56.3314,
@@ -35,17 +36,21 @@ export const mockQuests: Quest[] = [
         lat: 56.3299,
         lng: 44.0137,
         title: 'Чкаловская лестница',
-        task: 'Сосчитайте количество пролётов лестницы и введите число.',
+        task: 'Сколько пролётов у лестницы? Выберите вариант.',
         answer: '2',
         hint: 'Лестница состоит из двух огромных спиралей.',
+        type: 'choice',
+        options: ['1', '2', '3', '4'],
       },
       {
         lat: 56.3286,
         lng: 44.003,
         title: 'Ивановская башня',
-        task: 'Найдите год постройки башни на информационной табличке.',
+        task: 'В каком году построена башня? Выберите вариант.',
         answer: '1552',
         hint: 'Год указан рядом с описанием башни.',
+        type: 'choice',
+        options: ['1508', '1520', '1552', '1574'],
       },
       {
         lat: 56.3247,
@@ -84,6 +89,7 @@ export const mockQuests: Quest[] = [
     is_new: false,
     rating: 4.8,
     tag: 'История города',
+    start: { lat: 56.3301, lng: 44.0048 },
     points: [
       {
         lat: 56.3314,
@@ -97,9 +103,11 @@ export const mockQuests: Quest[] = [
         lat: 56.3324,
         lng: 44.0042,
         title: 'Часовая башня',
-        task: 'Во сколько бьют часы? Введите время цифрами.',
+        task: 'Во сколько бьют часы? Выберите вариант.',
         answer: '12',
         hint: 'Легенда о ветряной мельнице подскажет.',
+        type: 'choice',
+        options: ['10', '11', '12', '13'],
       },
       {
         lat: 56.3295,
@@ -138,6 +146,7 @@ export const mockQuests: Quest[] = [
     is_new: true,
     rating: 4.7,
     tag: 'Новинка',
+    start: { lat: 56.3309, lng: 44.0143 },
     points: [
       {
         lat: 56.3299,
@@ -176,6 +185,7 @@ export const mockQuests: Quest[] = [
     is_new: false,
     rating: 4.9,
     tag: 'Для первого раза',
+    start: { lat: 56.3255, lng: 44.0083 },
     points: [
       {
         lat: 56.3247,
@@ -214,6 +224,7 @@ export const mockQuests: Quest[] = [
     is_new: true,
     rating: 4.6,
     tag: 'Для компании',
+    start: { lat: 56.3161, lng: 44.0172 },
     points: [
       {
         lat: 56.3152,
@@ -244,6 +255,7 @@ export const mockQuests: Quest[] = [
     is_new: false,
     rating: 4.5,
     tag: 'Для смелых',
+    start: { lat: 56.3277, lng: 44.0022 },
     points: [
       {
         lat: 56.3286,
@@ -274,6 +286,7 @@ export const mockQuests: Quest[] = [
     is_new: false,
     rating: 4.8,
     tag: 'История города',
+    start: { lat: 56.3254, lng: 44.0103 },
     points: [
       {
         lat: 56.3247,
@@ -304,6 +317,7 @@ export const mockQuests: Quest[] = [
     is_new: true,
     rating: 4.9,
     tag: 'Новинка',
+    start: { lat: 56.3254, lng: 44.0064 },
     points: [
       {
         lat: 56.3262,
@@ -381,11 +395,61 @@ export const mockQuests: Quest[] = [
 ]
 
 export const mockTeams: Team[] = [
-  { id: 1, name: 'Друзья', avatar: IMG('avatars/u1.jpg'), members: 5, quests: 12, points: 12460, is_mine: true },
-  { id: 2, name: 'Кодеры', avatar: IMG('avatars/u2.jpg'), members: 4, quests: 8, points: 10320, is_mine: false },
-  { id: 3, name: 'Лига НН', avatar: IMG('avatars/u3.jpg'), members: 3, quests: 6, points: 8750, is_mine: true },
-  { id: 4, name: 'В поисках приключений', avatar: IMG('avatars/u4.jpg'), members: 6, quests: 15, points: 7230, is_mine: false },
-  { id: 5, name: 'The North', avatar: IMG('avatars/u5.jpg'), members: 4, quests: 9, points: 6980, is_mine: false },
+  {
+    id: 1,
+    name: 'Друзья',
+    description: 'Проходим квесты по выходным, берём сложные маршруты.',
+    avatar: IMG('avatars/u1.jpg'),
+    code: 'DRUZYA',
+    members: 5,
+    quests: 12,
+    points: 12460,
+    is_mine: true,
+  },
+  {
+    id: 2,
+    name: 'Кодеры',
+    description: 'Команда из IT-сферы: скорость, логика и никаких подсказок.',
+    avatar: IMG('avatars/u2.jpg'),
+    code: 'KODERY',
+    members: 4,
+    quests: 8,
+    points: 10320,
+    is_mine: false,
+  },
+  {
+    id: 3,
+    name: 'Лига НН',
+    description: 'Городские квесты по истории Нижнего Новгорода.',
+    avatar: IMG('avatars/u3.jpg'),
+    code: 'LIGANN',
+    members: 3,
+    quests: 6,
+    points: 8750,
+    is_mine: true,
+  },
+  {
+    id: 4,
+    name: 'В поисках приключений',
+    description: 'Большая компания для длинных маршрутов.',
+    avatar: IMG('avatars/u4.jpg'),
+    code: 'ADVENT',
+    members: 6,
+    quests: 15,
+    points: 7230,
+    is_mine: false,
+  },
+  {
+    id: 5,
+    name: 'The North',
+    description: 'Вечерние и ночные квесты компанией.',
+    avatar: IMG('avatars/u5.jpg'),
+    code: 'NORTH1',
+    members: 4,
+    quests: 9,
+    points: 6980,
+    is_mine: false,
+  },
 ]
 
 export const mockProfile: Profile = {

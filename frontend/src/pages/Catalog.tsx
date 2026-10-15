@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { Clock, MapPin, Route, Search, Star, X } from 'lucide-react'
 import { api } from '../api/client'
 import type { Quest } from '../types'
 import { QuestCard } from '../components/QuestCard'
@@ -21,7 +21,7 @@ export function Catalog({ onlyMap = false }: { onlyMap?: boolean }) {
   const [filter, setFilter] = useState<Filter>('all')
   const [params] = useSearchParams()
   const [query, setQuery] = useState(params.get('q') ?? '')
-  const [selected, setSelected] = useState<number | null>(null)
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
 
   useEffect(() => {
     api.getQuests('published').then((qs) => setQuests((qs as Quest[]).filter((q) => q.points.length > 0)))
@@ -40,12 +40,9 @@ export function Catalog({ onlyMap = false }: { onlyMap?: boolean }) {
   const mapPoints = useMemo(() => list.flatMap((q) => q.points.map((p) => p)), [list])
   const pointQuestIds = useMemo(() => list.flatMap((q) => q.points.map(() => q.id)), [list])
 
-  const selectFromMap = (index: number) => {
-    const questId = pointQuestIds[index]
-    if (questId === undefined) return
-    setSelected(questId)
-    document.getElementById(`quest-card-${questId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }
+  const selectedPoint = selectedIdx === null ? null : mapPoints[selectedIdx] ?? null
+  const selectedQuestId = selectedIdx === null ? null : pointQuestIds[selectedIdx] ?? null
+  const selectedQuest = selectedQuestId === null ? null : list.find((q) => q.id === selectedQuestId) ?? null
 
   if (onlyMap) {
     return (
@@ -87,9 +84,52 @@ export function Catalog({ onlyMap = false }: { onlyMap?: boolean }) {
 
       <div className="cat-layout">
         <div className="cat-map">
-          <QuestMap points={mapPoints} className="cat-map-card" onSelect={selectFromMap} />
+          <QuestMap points={mapPoints} className="cat-map-card" expandable onSelect={setSelectedIdx}>
+            {selectedQuest && selectedPoint && selectedIdx !== null && (
+              <aside className="map-task-panel" key={`${selectedQuest.id}-${selectedIdx}`}>
+                <button className="mtp-close" onClick={() => setSelectedIdx(null)} aria-label="Закрыть панель">
+                  <X size={18} />
+                </button>
+
+                <div className="mtp-quest">
+                  <img src={selectedQuest.image} alt={selectedQuest.title} className="mtp-img" />
+                  <div>
+                    <div className="mtp-quest-title">{selectedQuest.title}</div>
+                    <div className="mtp-quest-loc">
+                      <MapPin size={14} />
+                      {selectedQuest.district}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mtp-point">
+                  <span className="mtp-point-label">
+                    Точка {selectedIdx + 1} · {selectedPoint.title}
+                  </span>
+                  <p className="mtp-task">{selectedPoint.task}</p>
+                  {selectedPoint.hint && <p className="mtp-hint">Подсказка: {selectedPoint.hint}</p>}
+                </div>
+
+                <div className="mtp-meta">
+                  <span>
+                    <Star size={15} fill="#FFC107" color="#FFC107" /> {selectedQuest.rating.toFixed(1)}
+                  </span>
+                  <span>
+                    <Route size={15} /> {selectedQuest.distance_km} км
+                  </span>
+                  <span>
+                    <Clock size={15} /> {Math.round(selectedQuest.duration_min / 60)} ч
+                  </span>
+                </div>
+
+                <Link to={`/quests/${selectedQuest.id}`} className="btn btn-primary btn-block">
+                  Открыть квест
+                </Link>
+              </aside>
+            )}
+          </QuestMap>
           <p className="caption muted cat-map-hint">
-            Точки на карте — задания квестов. Нажми на пин, чтобы найти квест.
+            Точки на карте — задания квестов. Нажми на пин, чтобы открыть панель задания.
           </p>
         </div>
 
@@ -97,7 +137,7 @@ export function Catalog({ onlyMap = false }: { onlyMap?: boolean }) {
           <div className="results-count" style={{ textAlign: 'left' }}>{list.length} квестов</div>
           <div className="cat-cards">
             {list.map((q) => (
-              <div key={q.id} id={`quest-card-${q.id}`} className={selected === q.id ? 'cat-card selected' : 'cat-card'}>
+              <div key={q.id} className={selectedQuestId === q.id ? 'cat-card selected' : 'cat-card'}>
                 <QuestCard quest={q} />
               </div>
             ))}

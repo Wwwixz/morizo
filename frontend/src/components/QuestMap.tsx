@@ -1,13 +1,27 @@
-import { useEffect, useMemo } from 'react'
-import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react'
+import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { Crosshair, Minus, Plus, Search } from 'lucide-react'
+import { ChevronDown, ChevronUp, Crosshair, Eye, EyeOff, Search } from 'lucide-react'
+import { fetchRoute, type LatLng } from '../api/route'
 
 export interface MapPoint {
   lat: number
   lng: number
-  title: string
+  title?: string
 }
+/** Синяя точка «вы здесь» — отличается по форме от метки-пина чекпоинта */
+function hereIcon(size = 26) {
+  return L.divIcon({
+    className: 'map-pin-wrap',
+    html: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))">
+      <circle cx="12" cy="12" r="11" fill="#2F6BFF" opacity="0.18"/>
+      <circle cx="12" cy="12" r="7" fill="#2F6BFF" stroke="#FFFFFF" stroke-width="3"/>
+    </svg>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  })
+}
+
 function pinIcon(variant: 'yellow' | 'black' | 'pulse', size = 34) {
   const fill = variant === 'yellow' ? '#FFC107' : '#0F0F0F'
   const stroke = variant === 'black' ? '#FFFFFF' : '#0F0F0F'
@@ -64,28 +78,90 @@ function ZoomCtrls({ dark }: { dark?: boolean }) {
   )
 }
 
+function ResizeOnExpand({ expanded }: { expanded: boolean }) {
+  const map = useMap()
+  useEffect(() => {
+    const t = setTimeout(() => map.invalidateSize(), 320)
+    return () => clearTimeout(t)
+  }, [expanded, map])
+  return null
+}
+
 export function QuestMap({
   points,
   dark = false,
   visited = [],
   current,
+  currentLabel,
+  youIndex,
+  youLabel,
   showRoute = true,
   className = 'map-tall',
+  expandable = false,
   onSelect,
+  children,
 }: {
   points: MapPoint[]
   dark?: boolean
   visited?: number[]
   current?: number
+  /** подпись у текущего чекпоинта (куда идти), например «Идите сюда» */
+  currentLabel?: string
+  /** индекс точки, где сейчас находится игрок */
+  youIndex?: number
+  /** подпись у точки игрока, например «Сейчас вы находитесь здесь» */
+  youLabel?: string
   showRoute?: boolean
   className?: string
+  expandable?: boolean
   onSelect?: (index: number) => void
+  children?: ReactNode
 }) {
   const center = useMemo<[number, number]>(() => [56.3269, 44.0059], [])
-  const line = points.map((p) => [p.lat, p.lng] as [number, number])
+  const line = useMemo<LatLng[]>(() => points.map((p) => [p.lat, p.lng] as LatLng), [points])
+  const [expanded, setExpanded] = useState(false)
+  // Маршрут по дорогам; пока не загрузился — рисуем прямую линию
+  const [route, setRoute] = useState<LatLng[] | null>(null)
+  const [routeLoading, setRouteLoading] = useState(false)
+  const coordKey = useMemo(() => line.map(([lat, lng]) => `${lat},${lng}`).join(';'), [line])
+
+  useEffect(() => {
+    if (!showRoute || line.length < 2) {
+      setRoute(null)
+      setRouteLoading(false)
+      return
+    }
+    let alive = true
+    setRoute(null)
+    setRouteLoading(true)
+    fetchRoute(line).then((r) => {
+      if (!alive) return
+      setRoute(r)
+      setRouteLoading(false)
+    })
+    return () => {
+      alive = false
+    }
+  }, [coordKey, showRoute])
+
+  const routeLine = route ?? line
+  // Пока строим маршрут, линию не показываем — прямая резала бы дома
+  const hasLine = showRoute && points.length > 1 && (!routeLoading || Boolean(route))
+  // Подписи у меток («Идите сюда», «Сейчас вы находитесь здесь») можно свернуть
+  const [labelsHidden, setLabelsHidden] = useState(false)
+  // Каждую подпись можно свернуть в «...» кликом по ней
+  const [tipCollapsed, setTipCollapsed] = useState({ go: false, you: false })
+  const toggleTip = (key: 'go' | 'you') => (e: MouseEvent) => {
+    e.stopPropagation()
+    setTipCollapsed((c) => ({ ...c, [key]: !c[key] }))
+  }
+  const hasLabels = Boolean((currentLabel && current !== undefined) || (youLabel && youIndex !== undefined))
 
   return (
-    <div className={`map-card ${className}`} style={dark ? { background: '#191b1f', borderColor: 'rgba(255,255,255,.1)' } : undefined}>
+    <div
+      className={`map-card ${className}${expanded ? ' map-expanded' : ''}${children ? ' map-has-panel' : ''}`}
+      style={dark ? { background: '#191b1f', borderColor: 'rgba(255,255,255,.1)' } : undefined}
+    >
       <MapContainer
         center={center}
         zoom={13}
@@ -98,35 +174,100 @@ export function QuestMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {showRoute && points.length > 1 && (
-          <Polyline
-            positions={line}
-            pathOptions={{
-              color: '#FFC107',
-              weight: 3,
-              dashArray: '2 10',
-              lineCap: 'round',
-              opacity: 0.95,
-            }}
-          />
+        {hasLine && (
+          <>
+            {/* подложка — чтобы линия читалась на любом фоне карты */}
+            <Polyline
+              positions={routeLine}
+              pathOptions={{
+                color: dark ? '#0B0D12' : '#FFFFFF',
+                weight: 9,
+                opacity: 0.75,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+            <Polyline
+              positions={routeLine}
+              pathOptions={{
+                color: '#2F6BFF',
+                weight: 4.5,
+                opacity: 1,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+            />
+          </>
         )}
         {points.map((p, i) => {
           const isCurrent = current === i
+          const isYou = youIndex === i
           const isVisited = visited.includes(i)
-          const variant = isCurrent ? 'pulse' : isVisited || current === undefined ? 'yellow' : 'black'
+          // метки со подписями — статичные, без анимации
+          const variant = isCurrent
+            ? currentLabel
+              ? 'yellow'
+              : 'pulse'
+            : isYou
+              ? 'black'
+              : isVisited || current === undefined
+                ? 'yellow'
+                : 'black'
+          const size = isCurrent && currentLabel ? 40 : isYou ? 30 : 34
+          const icon = isYou && !isCurrent ? hereIcon() : pinIcon(variant, size)
           return (
             <Marker
               key={i}
               position={[p.lat, p.lng]}
-              icon={pinIcon(variant)}
+              icon={icon}
               title={p.title}
               eventHandlers={onSelect ? { click: () => onSelect(i) } : undefined}
-            />
+            >
+              {isCurrent && currentLabel && !labelsHidden && (
+                <Tooltip permanent direction="top" offset={[0, -size - 6]} opacity={1} className="map-go-tip">
+                  <span
+                    className="map-tip-toggle"
+                    title={tipCollapsed.go ? 'Развернуть подпись' : 'Свернуть подпись'}
+                    onClick={toggleTip('go')}
+                  >
+                    {tipCollapsed.go ? '...' : currentLabel}
+                  </span>
+                </Tooltip>
+              )}
+              {isYou && youLabel && !labelsHidden && (
+                <Tooltip permanent direction="bottom" offset={[0, isCurrent ? 6 : 18]} opacity={1} className="map-you-tip">
+                  <span
+                    className="map-tip-toggle"
+                    title={tipCollapsed.you ? 'Развернуть подпись' : 'Свернуть подпись'}
+                    onClick={toggleTip('you')}
+                  >
+                    {tipCollapsed.you ? '...' : youLabel}
+                  </span>
+                </Tooltip>
+              )}
+            </Marker>
           )
         })}
         <FitBounds points={points} />
+        <ResizeOnExpand expanded={expanded} />
         <ZoomCtrls dark={dark} />
       </MapContainer>
+
+      {hasLabels && (
+        <button className="map-labels-tab" onClick={() => setLabelsHidden((v) => !v)}>
+          {labelsHidden ? <Eye size={15} /> : <EyeOff size={15} />}
+          {labelsHidden ? 'Показать подписи' : 'Скрыть подписи'}
+        </button>
+      )}
+
+      {expandable && (
+        <button className="map-expand-tab" onClick={() => setExpanded((v) => !v)}>
+          {expanded ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          {expanded ? 'Свернуть карту' : 'Открыть карту на всю'}
+        </button>
+      )}
+
+      {children}
     </div>
   )
 }

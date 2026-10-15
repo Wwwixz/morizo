@@ -1,3 +1,5 @@
+export type QuestPointType = 'code' | 'choice'
+
 export interface QuestPoint {
   lat: number
   lng: number
@@ -5,9 +7,18 @@ export interface QuestPoint {
   task: string
   answer: string
   hint: string
+  /** 'code' — ввод кодового слова (по умолчанию), 'choice' — выбор варианта ответа */
+  type?: QuestPointType
+  options?: string[]
 }
 
 export type QuestStatus = 'published' | 'pending' | 'rejected'
+
+/** Точка сбора, с которой начинается прохождение */
+export interface QuestStart {
+  lat: number
+  lng: number
+}
 
 export interface Quest {
   id: number
@@ -27,13 +38,17 @@ export interface Quest {
   is_new: boolean
   rating: number
   tag: string
+  start?: QuestStart
   points: QuestPoint[]
 }
 
 export interface Team {
   id: number
   name: string
+  description?: string
   avatar: string
+  /** код приглашения — по нему вступают в команду */
+  code?: string
   members: number
   quests: number
   points: number
