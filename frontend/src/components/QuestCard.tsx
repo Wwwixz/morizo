@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Clock, Gauge, MapPin, Route, Star } from 'lucide-react'
+import { Clock, MapPin, Route, Star } from 'lucide-react'
 import type { Quest } from '../types'
 import { Badge } from './Badge'
 
@@ -10,13 +10,24 @@ export function tagVariant(tag: string): 'yellow' | 'blue' | 'red' | 'green' {
   return 'blue'
 }
 
+function fmtRange(durationMin: number): string {
+  const lo = Math.floor((durationMin / 60) * 2) / 2
+  const hi = lo + 0.5
+  const f = (v: number) => (Number.isInteger(v) ? `${v}` : `${v}`)
+  return `${f(lo)}-${f(hi)} часа`
+}
+
 export function QuestCard({ quest }: { quest: Quest }) {
-  const hours = Math.max(1, Math.round(quest.duration_min / 60))
   return (
-    <article className="quest-card" style={{ position: 'relative' }}>
-      <div className="quest-card-img" style={{ backgroundImage: `url(${quest.image})` }} />
-      <div className="card-badges">
-        <Badge variant={tagVariant(quest.tag)}>{quest.tag}</Badge>
+    <article className="quest-card">
+      <div className="quest-card-img" style={{ backgroundImage: `url(${quest.image})` }}>
+        <div className="card-badges">
+          <Badge variant={tagVariant(quest.tag)}>{quest.tag}</Badge>
+        </div>
+        <span className="qcard-rating">
+          <Star size={14} fill="#FFC107" color="#FFC107" />
+          {quest.rating.toFixed(1)}
+        </span>
       </div>
       <div className="quest-card-body">
         <div className="quest-card-title">{quest.title}</div>
@@ -24,19 +35,12 @@ export function QuestCard({ quest }: { quest: Quest }) {
           <MapPin size={14} />
           {quest.district}
         </div>
-        <p className="quest-card-desc">{quest.description}</p>
         <div className="quest-meta">
           <span>
             <Route size={15} /> {quest.distance_km} км
           </span>
           <span>
-            <Gauge size={15} /> {quest.difficulty}/5
-          </span>
-          <span>
-            <Clock size={15} /> {hours} ч
-          </span>
-          <span className="rating">
-            <Star size={15} fill="#FFC107" color="#FFC107" /> {quest.rating.toFixed(1)}
+            <Clock size={15} /> {fmtRange(quest.duration_min)}
           </span>
         </div>
         <Link to={`/quests/${quest.id}`} className="btn btn-primary btn-block">

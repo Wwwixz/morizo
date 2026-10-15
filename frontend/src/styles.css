@@ -1276,3 +1276,90 @@ textarea.field { resize: vertical; min-height: 110px; }
 }
 
 #root { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ============================================================
+   Catalog (Figma «Каталог квестов»)
+   ============================================================ */
+.cat-head { margin-bottom: 26px; }
+.cat-head h1 { font-size: 38px; font-weight: 800; }
+.cat-sub { color: var(--gray-500); font-size: 17px; margin-top: 8px; }
+
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 26px;
+}
+.cat-grid .quest-card { margin: 0; height: 100%; }
+.cat-grid .quest-card-img { height: 250px; }
+
+.quest-card-img { position: relative; }
+.qcard-rating {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(15, 15, 15, 0.72);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+.quest-card-title { font-size: 20px; font-weight: 700; }
+.quest-card-loc { font-size: 14px; }
+
+@media (max-width: 1080px) {
+  .cat-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 860px) {
+  .cat-grid { grid-template-columns: 1fr; }
+  .cat-head h1 { font-size: 30px; }
+  .filter-row { gap: 8px; }
+  .filter-search { width: 100%; margin-left: 0; }
+}
+
+/* Layout каталога: липкая карта слева + карточки справа */
+.cat-layout {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.cat-map { position: sticky; top: 92px; }
+.cat-map-card { height: calc(100vh - 210px); min-height: 480px; }
+.cat-map-hint { margin-top: 10px; }
+.cat-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.cat-cards .quest-card { margin: 0; height: 100%; }
+.cat-cards .quest-card-img { height: 190px; }
+.cat-card.selected .quest-card {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+.cat-card { scroll-margin-top: 110px; }
+
+@media (max-width: 1280px) {
+  .cat-layout { grid-template-columns: 380px 1fr; }
+}
+@media (max-width: 1080px) {
+  .cat-layout { grid-template-columns: 1fr; }
+  .cat-map { position: static; }
+  .cat-map-card { height: 380px; }
+  .cat-cards { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 860px) {
+  .cat-cards { grid-template-columns: 1fr; }
+}
+
+/* Кожа карт под дизайн (тайлы OSM) */
+.map-skin-light .leaflet-tile { filter: grayscale(0.35) saturate(0.75) brightness(1.04); }
+.map-skin-dark .leaflet-tile {
+  filter: invert(1) hue-rotate(185deg) brightness(0.82) contrast(0.92) saturate(0.6);
+}
+.leaflet-control-attribution { font-size: 10px !important; }

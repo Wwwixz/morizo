@@ -8,7 +8,6 @@ export interface MapPoint {
   lng: number
   title: string
 }
-
 function pinIcon(variant: 'yellow' | 'black' | 'pulse', size = 34) {
   const fill = variant === 'yellow' ? '#FFC107' : '#0F0F0F'
   const stroke = variant === 'black' ? '#FFFFFF' : '#0F0F0F'
@@ -72,6 +71,7 @@ export function QuestMap({
   current,
   showRoute = true,
   className = 'map-tall',
+  onSelect,
 }: {
   points: MapPoint[]
   dark?: boolean
@@ -79,21 +79,24 @@ export function QuestMap({
   current?: number
   showRoute?: boolean
   className?: string
+  onSelect?: (index: number) => void
 }) {
   const center = useMemo<[number, number]>(() => [56.3269, 44.0059], [])
   const line = points.map((p) => [p.lat, p.lng] as [number, number])
 
   return (
     <div className={`map-card ${className}`} style={dark ? { background: '#191b1f', borderColor: 'rgba(255,255,255,.1)' } : undefined}>
-      <MapContainer center={center} zoom={13} zoomControl={false} style={{ height: '100%', width: '100%' }}>
+      <MapContainer
+        center={center}
+        zoom={13}
+        zoomControl={false}
+        className={dark ? 'map-skin-dark' : 'map-skin-light'}
+        style={{ height: '100%', width: '100%' }}
+      >
         <TileLayer
           key={dark ? 'dark' : 'light'}
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
-          url={
-            dark
-              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-              : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-          }
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         {showRoute && points.length > 1 && (
           <Polyline
@@ -111,7 +114,15 @@ export function QuestMap({
           const isCurrent = current === i
           const isVisited = visited.includes(i)
           const variant = isCurrent ? 'pulse' : isVisited || current === undefined ? 'yellow' : 'black'
-          return <Marker key={i} position={[p.lat, p.lng]} icon={pinIcon(variant)} title={p.title} />
+          return (
+            <Marker
+              key={i}
+              position={[p.lat, p.lng]}
+              icon={pinIcon(variant)}
+              title={p.title}
+              eventHandlers={onSelect ? { click: () => onSelect(i) } : undefined}
+            />
+          )
         })}
         <FitBounds points={points} />
         <ZoomCtrls dark={dark} />
