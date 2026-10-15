@@ -1,17 +1,27 @@
 import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { Pencil, X, ChevronDown } from 'lucide-react'
 import { api } from '../api/client'
+import { useUser } from '../context/UserContext'
 import type { Profile } from '../types'
 
 const ICONS = ['👟', '⚡', '🧭', '🏆', '🗺️', '🎯']
 
 export function Profile() {
+  const { id } = useParams()
+  const { user } = useUser()
   const [p, setP] = useState<Profile | null>(null)
   const [open, setOpen] = useState(true)
 
+  const isMyProfile = !id || Number(id) === user?.id
+
   useEffect(() => {
-    api.getProfile().then(setP)
-  }, [])
+    if (id) {
+      api.getUserProfile(Number(id)).then(setP)
+    } else {
+      api.getProfile().then(setP)
+    }
+  }, [id])
 
   if (!p) return <div className="container page"><p className="muted">Загрузка...</p></div>
 
@@ -75,12 +85,14 @@ export function Profile() {
             </div>
           ))}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
-          <button className="btn btn-outline">
-            <Pencil size={15} />
-            Редактировать профиль
-          </button>
-        </div>
+        {isMyProfile && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+            <button className="btn btn-outline">
+              <Pencil size={15} />
+              Редактировать профиль
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

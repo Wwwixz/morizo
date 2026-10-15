@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { ChevronRight, LogOut, MapPin, Plus, Search, ShieldCheck, UserRound } from 'lucide-react'
+import { ChevronRight, LogOut, MapPin, Plus, ShieldCheck, UserRound } from 'lucide-react'
 import { Logo } from './Logo'
 import { useUser } from '../context/UserContext'
 
@@ -14,7 +14,6 @@ const NAV = [
 export function Header() {
   const { user, logout } = useUser()
   const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
   const nav = useNavigate()
   const ref = useRef<HTMLDivElement>(null)
 
@@ -25,11 +24,6 @@ export function Header() {
     document.addEventListener('mousedown', onClick)
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
-
-  const submitSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    nav(`/quests?q=${encodeURIComponent(query)}`)
-  }
 
   return (
     <header className="header">
@@ -45,14 +39,6 @@ export function Header() {
         <div className="header-right">
           {user ? (
             <>
-              <form className="search-mini" onSubmit={submitSearch}>
-                <Search size={16} />
-                <input
-                  placeholder="Поиск квестов..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-              </form>
               <div style={{ position: 'relative' }} ref={ref}>
                 <button className="avatar-btn" onClick={() => setOpen((v) => !v)}>
                   <img className="avatar" src={user.avatar} alt="" />
@@ -85,14 +71,6 @@ export function Header() {
             </>
           ) : (
             <>
-              <form className="search-mini" onSubmit={submitSearch}>
-                <Search size={16} />
-                <input
-                  placeholder="Поиск квестов..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-              </form>
               <button className="btn btn-secondary" onClick={() => nav('/login')}>
                 Войти
               </button>

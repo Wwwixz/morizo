@@ -41,6 +41,7 @@ export default function App() {
         <Route path="/teams" element={<Teams />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:id" element={<Profile />} />
         <Route path="/moderation" element={<Moderation />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

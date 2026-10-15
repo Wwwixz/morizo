@@ -1,5 +1,5 @@
 import type { Complaint, JoinRequest, Profile, Quest, QuestStatus, Stats, Team, User } from '../types'
-import { mockComplaints, mockProfile, mockQuests, mockStats, mockUser } from './mock'
+import { mockComplaints, mockProfile, mockProfiles, mockQuests, mockStats, mockUser } from './mock'
 import { acceptRequest, cancelRequest, createTeam, joinByCode, joinTeam, leaveTeam, listTeams, rejectRequest, removeMember, requestToJoin, updateTeam } from './teams'
 
 /**
@@ -69,6 +69,8 @@ export const api = {
   removeTeamMember: (teamId: number, userId: number) => delay(removeMember(teamId, userId)),
 
   getProfile: () => delay(mockProfile),
+
+  getUserProfile: (id: number) => delay(mockProfiles[id] || mockProfile),
 
   getComplaints: () => delay(mockComplaints),
 

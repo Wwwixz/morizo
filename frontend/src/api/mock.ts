@@ -510,6 +510,61 @@ export const mockProfile: Profile = {
   ],
 }
 
+export const mockProfiles: Record<number, Profile> = {
+  1: mockProfile,
+  2: {
+    name: 'Иван И.',
+    age_label: '18-20 лет',
+    avatar: IMG('avatars/u2.jpg'),
+    level: 5,
+    xp: 2100,
+    xp_next: 3500,
+    quests_done: 28,
+    teams: 4,
+    achievements: [
+      { id: 4, title: 'Алгоритмист', description: 'Лучшее время в 3 квестах', color: '#10B981' },
+      { id: 5, title: 'Следопыт', description: 'Пройдено 5 квестов в лесу', color: '#059669' },
+    ],
+  },
+  3: {
+    name: 'Ольга П.',
+    age_label: '21-25 лет',
+    avatar: IMG('avatars/u3.jpg'),
+    level: 4,
+    xp: 1200,
+    xp_next: 2000,
+    quests_done: 15,
+    teams: 2,
+    achievements: [
+      { id: 6, title: 'Историк', description: 'Знаток всех башен Кремля', color: '#8B5CF6' },
+    ],
+  },
+  4: {
+    name: 'Дмитрий С.',
+    age_label: '18-20 лет',
+    avatar: IMG('avatars/u4.jpg'),
+    level: 2,
+    xp: 300,
+    xp_next: 600,
+    quests_done: 5,
+    teams: 1,
+    achievements: [],
+  },
+  5: {
+    name: 'Анна М.',
+    age_label: '16-17 лет',
+    avatar: IMG('avatars/u5.jpg'),
+    level: 3,
+    xp: 800,
+    xp_next: 1200,
+    quests_done: 10,
+    teams: 3,
+    achievements: [
+      { id: 1, title: 'Первые шаги', description: 'Пройдите 1 квест', color: '#FFC107' },
+    ],
+  },
+}
+
 export const mockComplaints: Complaint[] = [
   { id: 1, quest_title: 'Тайны старого города', author: 'Кирилл М.', reason: 'Точка недоступна, ворота закрыты', date: '12.10.2026' },
   { id: 2, quest_title: 'Загадки улиц', author: 'Настя В.', reason: 'Ошибка в ответе на 3-й точке', date: '13.10.2026' },

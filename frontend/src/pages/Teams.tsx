@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Camera, Check, Copy, Edit, Plus, Search, UserMinus, UserPlus, X } from 'lucide-react'
 import { api } from '../api/client'
 import { TEAM_MAX, TEAM_MIN } from '../api/teams'
@@ -392,14 +393,16 @@ export function Teams() {
                 <div className="td-right">
                   <div className="td-label">Участники команды</div>
                   <div className="td-members-list">
-                    {selectedTeam.membersList?.map((m) => (
-                      <div key={m.id} className="td-member-row">
+                  {selectedTeam.membersList?.map((m) => (
+                    <div key={m.id} className="td-member-row">
+                      <Link to={`/profile/${m.id}`} className="lb-user">
                         <img src={m.avatar} alt="" />
                         <div className="td-member-info">
                           <div className="td-member-name">{m.name}</div>
                           <div className="td-member-role">{ROLE_LABELS[m.role]}</div>
                         </div>
-                        {canRemove(m) && (
+                      </Link>
+                      {canRemove(m) && (
                           <button
                             className="btn-icon reject"
                             style={{ marginLeft: 'auto' }}
@@ -419,8 +422,10 @@ export function Teams() {
                       <div className="team-requests">
                         {selectedTeam.requests.map((req) => (
                           <div className="request-row" key={req.userId}>
-                            <img src={req.userAvatar} alt="" className="request-avatar" />
-                            <span className="request-name">{req.userName}</span>
+                            <Link to={`/profile/${req.userId}`} className="lb-user">
+                              <img src={req.userAvatar} alt="" className="request-avatar" />
+                              <span className="request-name">{req.userName}</span>
+                            </Link>
                             <div className="request-actions">
                               <button
                                 className="btn-icon accept"
