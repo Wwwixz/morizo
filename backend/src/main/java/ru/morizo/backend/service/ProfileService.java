@@ -6,7 +6,9 @@ import ru.morizo.backend.entity.PlaySession;
 import ru.morizo.backend.entity.UserEntity;
 import ru.morizo.backend.repo.PlaySessionRepository;
 import ru.morizo.backend.repo.TeamMemberRepository;
+import ru.morizo.backend.repo.UserRepository;
 import ru.morizo.backend.web.dto.ProfileDtos.ProfileDto;
+import ru.morizo.backend.web.dto.ProfileDtos.UpdateProfileRequest;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,12 +20,22 @@ public class ProfileService {
     private final PlaySessionRepository sessions;
     private final TeamMemberRepository members;
     private final AchievementService achievements;
+    private final UserRepository users;
 
     public ProfileService(PlaySessionRepository sessions, TeamMemberRepository members,
-                          AchievementService achievements) {
+                          AchievementService achievements, UserRepository users) {
         this.sessions = sessions;
         this.members = members;
         this.achievements = achievements;
+        this.users = users;
+    }
+
+    @Transactional
+    public ProfileDto update(UserEntity user, UpdateProfileRequest req) {
+        user.setNickname(req.name().trim());
+        user.setAvatar(req.avatar());
+        users.save(user);
+        return profile(user);
     }
 
     @Transactional(readOnly = true)
@@ -52,7 +64,7 @@ public class ProfileService {
                 user.getAvatar(),
                 level,
                 xp,
-                (long) level * Scoring.XP_PER_LEVEL,
+                Scoring.XP_PER_LEVEL,
                 completedQuests.size(),
                 members.findByUserId(user.getId()).size(),
                 score,

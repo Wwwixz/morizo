@@ -190,6 +190,9 @@ export const api = {
   getProfile: () => http<Profile>('/api/profile'),
   getUserProfile: (id: number) => http<Profile>(`/api/profile/${id}`),
 
+  updateProfile: (data: { name: string; avatar: string }) =>
+    http<Profile>('/api/profile', { method: 'PUT', body: json(data) }),
+
   // ===== Модерация =====
   moderationQueue: async (status = 'pending'): Promise<Quest[]> =>
     (await http<any[]>(`/api/moderation/quests?status=${status}`)).map(toQuest),
