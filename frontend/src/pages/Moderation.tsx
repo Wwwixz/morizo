@@ -1,24 +1,66 @@
 import { useEffect, useState } from 'react'
-import { Clock } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Clock, ShieldAlert } from 'lucide-react'
 import { api } from '../api/client'
 import type { Complaint, Quest } from '../types'
+import { Modal } from '../components/Modal'
 import { useToast } from '../components/Toast'
+import { useUser } from '../context/UserContext'
 
 export function Moderation() {
+  const { user } = useUser()
   const [tab, setTab] = useState<'quests' | 'complaints'>('quests')
   const [pending, setPending] = useState<Quest[]>([])
   const [complaints, setComplaints] = useState<Complaint[]>([])
+  const [rejecting, setRejecting] = useState<Quest | null>(null)
+  const [reason, setReason] = useState('')
   const { toast } = useToast()
 
-  useEffect(() => {
-    api.getQuests('pending').then(setPending)
-    api.getComplaints().then(setComplaints)
-  }, [])
+  const isModerator = user?.role === 'MODERATOR'
 
-  const moderate = async (q: Quest, approve: boolean) => {
-    await api.moderateQuest(q.id, approve)
+  useEffect(() => {
+    if (!isModerator) return
+    api.moderationQueue('pending').then(setPending)
+    api.getComplaints().then(setComplaints)
+  }, [isModerator])
+
+  if (!isModerator) {
+    return (
+      <div className="container page">
+        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+          <ShieldAlert size={40} className="muted" />
+          <h2 style={{ marginTop: 12 }}>Доступ только для модераторов</h2>
+          <p className="muted small" style={{ marginTop: 8 }}>
+            Эта панель доступна пользователям с ролью «модератор». Войдите под демо-аккаунтом:{' '}
+            <b>moderator / demo123</b>.
+          </p>
+          <Link className="btn btn-primary" to="/login" style={{ marginTop: 18 }}>
+            Войти как модератор
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const approve = async (q: Quest) => {
+    await api.approveQuest(q.id)
     setPending((ps) => ps.filter((p) => p.id !== q.id))
-    toast(approve ? `«${q.title}» одобрен` : `«${q.title}» отклонён`, approve ? 'ok' : 'err')
+    toast(`«${q.title}» одобрен`, 'ok')
+  }
+
+  const submitReject = async () => {
+    if (!rejecting || reason.trim().length < 3) return
+    await api.rejectQuest(rejecting.id, reason.trim())
+    setPending((ps) => ps.filter((p) => p.id !== rejecting.id))
+    toast(`«${rejecting.title}» отклонён`, 'err')
+    setRejecting(null)
+    setReason('')
+  }
+
+  const resolve = async (c: Complaint) => {
+    await api.resolveComplaint(c.id)
+    setComplaints((cs) => cs.filter((x) => x.id !== c.id))
+    toast('Жалоба обработана', 'ok')
   }
 
   return (
@@ -53,13 +95,17 @@ export function Moderation() {
                     <span>
                       <Clock size={13} /> {q.distance_km} км
                     </span>
+                    <span>· {q.points_count} точек</span>
                   </div>
                 </div>
                 <div className="mod-actions">
-                  <button className="btn btn-primary" onClick={() => moderate(q, true)}>
+                  <Link className="btn btn-outline" to={`/quests/${q.id}`}>
+                    Открыть
+                  </Link>
+                  <button className="btn btn-primary" onClick={() => approve(q)}>
                     Одобрить
                   </button>
-                  <button className="btn btn-outline" onClick={() => moderate(q, false)}>
+                  <button className="btn btn-outline" onClick={() => setRejecting(q)}>
                     Отклонить
                   </button>
                 </div>
@@ -77,6 +123,7 @@ export function Moderation() {
                 <th>Автор жалобы</th>
                 <th>Причина</th>
                 <th>Дата</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -86,11 +133,46 @@ export function Moderation() {
                   <td>{c.author}</td>
                   <td className="muted">{c.reason}</td>
                   <td className="muted">{c.date}</td>
+                  <td>
+                    <button className="btn btn-outline btn-sm" onClick={() => resolve(c)}>
+                      Обработать
+                    </button>
+                  </td>
                 </tr>
               ))}
+              {complaints.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="muted" style={{ padding: 20 }}>
+                    Жалоб нет
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+      )}
+
+      {rejecting && (
+        <Modal title="Отклонить квест" onClose={() => setRejecting(null)}>
+          <p className="muted small" style={{ marginTop: 0 }}>
+            Укажите причину отклонения для автора квеста «{rejecting.title}».
+          </p>
+          <textarea
+            className="field"
+            rows={4}
+            placeholder="Например: задание не соответствует указанной локации"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+          <div className="modal-actions">
+            <button className="btn btn-outline" onClick={() => setRejecting(null)}>
+              Отмена
+            </button>
+            <button className="btn btn-primary" onClick={submitReject} disabled={reason.trim().length < 3}>
+              Отклонить
+            </button>
+          </div>
+        </Modal>
       )}
     </div>
   )

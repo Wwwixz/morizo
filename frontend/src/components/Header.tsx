@@ -52,9 +52,11 @@ export function Header() {
                     <Link to="/create" onClick={() => setOpen(false)}>
                       <Plus size={16} /> Создать квест
                     </Link>
-                    <Link to="/moderation" onClick={() => setOpen(false)}>
-                      <ShieldCheck size={16} /> Модерация
-                    </Link>
+                    {user.role === 'MODERATOR' && (
+                      <Link to="/moderation" onClick={() => setOpen(false)}>
+                        <ShieldCheck size={16} /> Модерация
+                      </Link>
+                    )}
                     <button
                       className="danger"
                       onClick={() => {

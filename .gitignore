@@ -7,6 +7,11 @@ dist/
 build/
 frontend/dist/
 
+# Backend build & local data
+backend/target/
+backend/data/
+backend/uploads/
+
 # Logs
 *.log
 npm-debug.log*

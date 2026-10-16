@@ -2,22 +2,21 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Bookmark, ChevronRight, Clock, Gauge, MapPin, Route, UsersRound } from 'lucide-react'
 import { api } from '../api/client'
-import {
-  RUN_STATUS_LABEL,
-  getRun,
-  restartRun,
-  runStatus,
-  startRun,
-  type QuestRun,
-  type RunTeam,
-} from '../api/runs'
 import { isFavorite, toggleFavorite } from '../api/favorites'
 import { TEAM_MAX, TEAM_MIN, canTeamPlay } from '../api/teams'
-import type { Quest, Team } from '../types'
+import type { PlaySession, PlayStatus, Quest, Team } from '../types'
 import { Modal } from '../components/Modal'
 import { QuestMap } from '../components/QuestMap'
 import { useToast } from '../components/Toast'
 import { useUser } from '../context/UserContext'
+import { STATUS_CHIP } from './PlayQuest'
+
+const STATUS_LABEL: Record<PlayStatus, string> = {
+  STARTED: 'Начато',
+  IN_PROGRESS: 'В процессе',
+  COMPLETED: 'Завершено',
+  ABANDONED: 'Брошено',
+}
 
 export function QuestDetails() {
   const { id } = useParams()
@@ -25,39 +24,48 @@ export function QuestDetails() {
   const { user } = useUser()
   const { toast } = useToast()
   const [quest, setQuest] = useState<Quest | null>(null)
-  const [run, setRun] = useState<QuestRun | null>(null)
+  const [session, setSession] = useState<PlaySession | null>(null)
   const [fav, setFav] = useState(false)
   const [myTeams, setMyTeams] = useState<Team[]>([])
   const [pickingTeam, setPickingTeam] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     if (!id) return
     const questId = Number(id)
     api.getQuest(questId).then((q) => setQuest(q ?? null))
-    setRun(getRun(questId))
     setFav(isFavorite(questId))
-    api.getTeams().then((ts) => setMyTeams(ts.filter((t) => t.is_mine)))
-  }, [id])
+    if (user) {
+      api.activeSession(questId).then(setSession).catch(() => setSession(null))
+      api.getTeams().then((ts) => setMyTeams(ts.filter((t) => t.is_mine)))
+    }
+  }, [id, user])
 
   if (!quest) return <div className="container page"><p className="muted">Загрузка...</p></div>
 
-  const status = run ? runStatus(run) : null
-  const startLabel =
-    !status || status === 'abandoned' ? 'Начать квест' : status === 'done' ? 'Пройти заново' : 'Продолжить квест'
+  const activeStatus: PlayStatus | null =
+    session && session.status !== 'COMPLETED' && session.status !== 'ABANDONED' ? session.status : null
+  const completed = session?.status === 'COMPLETED'
+  const startLabel = completed ? 'Пройти заново' : activeStatus ? 'Продолжить квест' : 'Начать квест'
 
-  const start = (team?: RunTeam) => {
+  const start = async (teamId?: number | null) => {
+    setError('')
     if (!user) {
       nav('/login')
       return
     }
-    if (status === 'done') restartRun(quest, team)
-    else startRun(quest, team)
-    nav(`/quests/${quest.id}/play`)
+    try {
+      await api.startPlay(quest.id, teamId ?? null)
+      nav(`/quests/${quest.id}/play`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Не удалось начать квест')
+      toast(e instanceof Error ? e.message : 'Не удалось начать квест', 'err')
+    }
   }
 
   const startWithTeam = (t: Team) => {
     setPickingTeam(false)
-    start({ id: t.id, name: t.name, members: t.members })
+    start(t.id)
   }
 
   return (
@@ -68,36 +76,35 @@ export function QuestDetails() {
         <span>{quest.title}</span>
       </div>
 
-      <div
-        className="details-hero"
-        style={{ backgroundImage: `url(${quest.image})` }}
-      />
+      <div className="details-hero" style={{ backgroundImage: `url(${quest.image})` }} />
 
       <div className="details-grid">
         <div>
           <div className="details-title-row">
             <h1>{quest.title}</h1>
             <div className="details-play">
-              {run?.team && (
+              {session?.team_id != null && (
                 <span className="run-chip team">
-                  <UsersRound size={13} /> {run.team.name} · {run.team.members} чел
+                  <UsersRound size={13} /> Командой
                 </span>
               )}
-              {status && (
-                <span className={`run-chip ${status}`}>
-                  {RUN_STATUS_LABEL[status]}
-                  {status !== 'done' && status !== 'abandoned' && ` · ${run?.done.length}/${run?.total} точек`}
+              {session && (
+                <span className={`run-chip ${STATUS_CHIP[session.status]}`}>
+                  {STATUS_LABEL[session.status]}
+                  {activeStatus && ` · ${session.current}/${session.total} точек`}
                 </span>
               )}
               <button className="btn btn-outline" onClick={() => (user ? setPickingTeam(true) : nav('/login'))}>
                 <UsersRound size={16} />
                 Командой
               </button>
-              <button className="btn btn-primary" onClick={() => start(run?.team)}>
+              <button className="btn btn-primary" onClick={() => start(session?.team_id ?? null)}>
                 {startLabel}
               </button>
             </div>
           </div>
+
+          {error && <div className="auth-error">{error}</div>}
 
           <div className="details-meta">
             <span>
@@ -122,6 +129,8 @@ export function QuestDetails() {
           </div>
 
           <p className="details-desc">{quest.description}</p>
+
+          {quest.rules && <div className="hint-box" style={{ marginBottom: 20 }}>{quest.rules}</div>}
 
           <h2 className="section-title">Маршрут квеста</h2>
           <QuestMap points={quest.points} className="map-medium" />

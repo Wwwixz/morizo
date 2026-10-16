@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { User } from '../types'
+import { api } from '../api/client'
 
 interface UserCtx {
   user: User | null
@@ -28,6 +29,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const logout = useCallback(() => {
+    api.logout()
     localStorage.removeItem(KEY)
     setUser(null)
   }, [])

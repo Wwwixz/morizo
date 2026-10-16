@@ -37,13 +37,17 @@ export function Login() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email.includes('@') || password.length < 4) {
-      setError('Введите корректный email и пароль (минимум 4 символа)')
+    if (!email.trim() || password.length < 4) {
+      setError('Введите логин и пароль (минимум 4 символа)')
       return
     }
-    const user = await api.login(email)
-    login(user)
-    nav('/')
+    try {
+      const user = await api.login(email.trim(), password)
+      login(user)
+      nav('/')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не удалось войти')
+    }
   }
 
   return (
@@ -78,6 +82,10 @@ export function Login() {
           Забыли пароль?
         </a>
       </div>
+      <p className="muted small" style={{ marginTop: 10 }}>
+        Демо-доступ: игрок — <b>artem@morizo.ru</b>, модератор — <b>moderator@morizo.ru</b>. Пароль:{' '}
+        <b>demo123</b>
+      </p>
       <p className="auth-alt">
         Нет аккаунта?{' '}
         <Link className="auth-link" to="/register">

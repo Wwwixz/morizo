@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: morizo-backend
+  profiles:
+    # default: локальный запуск без Docker (in-memory H2).
+    # Для PostgreSQL: --spring.profiles.active=postgres или SPRING_PROFILES_ACTIVE=postgres
+    default: h2
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: 8080
+  error:
+    include-message: always
+
+app:
+  jwt:
+    # срок жизни токена, ч
+    ttl-hours: 168
+    # секрет; в проде задаётся через переменную окружения APP_JWT_SECRET
+    secret: "morizo-demo-secret-key-change-me-in-production-0123456789abcdef"
+  uploads:
+    dir: ${UPLOADS_DIR:./uploads}
+  url: ${APP_URL:http://localhost:8080}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    ru.morizo: INFO
