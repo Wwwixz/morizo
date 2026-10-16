@@ -1,0 +1,7 @@
+target
+data
+uploads
+.mvn/wrapper/*.jar
+*.iml
+.idea
+.git

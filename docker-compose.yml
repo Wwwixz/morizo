@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: morizo
+      POSTGRES_USER: morizo
+      POSTGRES_PASSWORD: morizo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U morizo -d morizo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: morizo
+      DB_USER: morizo
+      DB_PASSWORD: morizo
+      # ОБЯЗАТЕЛЬНО замените в проде (минимум 32 символа)
+      APP_JWT_SECRET: ${APP_JWT_SECRET:-morizo-demo-secret-key-change-me-in-production-0123456789abcdef}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      UPLOADS_DIR: /app/uploads
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/app/uploads
+
+volumes:
+  pgdata:
+  uploads:
